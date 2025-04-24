@@ -2,10 +2,27 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maracutaia</title>
+    <title>Visualizar Código - Adega</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: monospace;
+            padding: 20px;
+        }
+        pre {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 <body>
+    <h1>Código do Sistema da Adega</h1>
+    <p>Abaixo está o código-fonte:</p>
+    <pre>
 import customtkinter as ctk
 import pyodbc
 
@@ -158,12 +175,8 @@ def atualizar():
         except Exception as e:
             ctk.CTkLabel(tela_atualizar, text=f"Erro: {e}", text_color="red").pack(pady=10)
 
-    ctk.CTkButton(tela_atualizar, text="Atualizar", command=executar_atualizacao_local).pack(pady=20)
-
+    ctk.CTkButton(tela_atualizar, text="Atualizar", command=executar_atualizacao_local).pack(pady=20)      
             
-            
-
-
 def listar(conexao):
   cursor = conexao.cursor()
   cursor.execute("SELECT * FROM tbl_vinhos")
@@ -172,8 +185,6 @@ def listar(conexao):
         print(vinho)
 
 janela_adega()
-
-
-
+    </pre>
 </body>
 </html>
