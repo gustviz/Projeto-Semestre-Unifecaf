@@ -56,7 +56,6 @@ def janela_login():
     tela_login = ctk.CTk()
     tela_login.geometry('400x400')
     tela_login.title('Login Adega 4 amigos')
-    tela_login.iconbitmap("uvas.ico") 
     frame1 = ctk.CTkFrame(tela_login, width=300, height=350)
     frame1.pack(pady=10, padx=10, anchor='center')
     frame1.pack_propagate(False)
@@ -95,7 +94,6 @@ def janela_adega():
     ctk.set_appearance_mode('dark')
     tela_adega.geometry('800x600')
     tela_adega.title('Adega 4 amigos')
-    tela_adega.iconbitmap("uvas.ico") 
     frame_adega = ctk.CTkFrame(tela_adega, width=700, height=500, corner_radius=15)
     frame_adega.place(relx=0.5, rely=0.5, anchor='center')
     frame_adega.pack_propagate(False)
@@ -137,16 +135,16 @@ def inserir(conexao):
     entry_safra.pack(pady=10)
     entry_quantidade = ctk.CTkEntry(janela, placeholder_text="Quantidade (ml)")
     entry_quantidade.pack(pady=10)
-    entry_preco = ctk.CTkEntry(janela, placeholder_text="Preço (R$)")
-    entry_preco.pack(pady=10)
+    entry_valor = ctk.CTkEntry(janela, placeholder_text="Valor (R$)")
+    entry_valor.pack(pady=10)
     resultado = ctk.CTkLabel(janela, text="")
     resultado.pack(pady=10)
     
-    def criar_vinho(conexao, nome, tipo, safra, quantidade, preco):
+    def criar_vinho(conexao, nome, tipo, safra, quantidade, valor):
         cursor = conexao.cursor()
         cursor.execute(
-            "INSERT INTO tbl_vinhos (nome_vinho, tipo, safra, quantidade, preco) VALUES (%s, %s, %s, %s, %s)",
-            (nome, tipo, safra, quantidade, preco)
+            "INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho) VALUES (%s, %s, %s, %s, %s)",
+            (nome, tipo, safra, quantidade, valor)
         )
         conexao.commit()
 
@@ -154,10 +152,10 @@ def inserir(conexao):
         try:
             nome = entry_nome.get()
             tipo = entry_tipo.get()
-            safra_str = entry_safra.get()
-            safra = datetime.strptime(safra_str, "%Y-%m-%d").date() 
+            safra = entry_safra.get()
+            safra = datetime.strptime(str(safra), "%Y-%m-%d").date() 
             quantidade = int(entry_quantidade.get())
-            preco = float(entry_preco.get())
+            preco = float(entry_valor.get())
             criar_vinho(conexao, nome, tipo, safra, quantidade, preco)
             resultado.configure(text="Vinho cadastrado com sucesso!", text_color="green")
         except ValueError:
@@ -165,6 +163,12 @@ def inserir(conexao):
         except Exception as e:
             resultado.configure(text=f"Erro: {e}", text_color="red")
     ctk.CTkButton(janela, text="Salvar", command=salvar).pack(pady=20)
+    entry_nome.delete(0, 'end')
+    entry_tipo.delete(0, 'end')
+    entry_safra.delete(0, 'end')
+    entry_quantidade.delete(0, 'end')
+    entry_valor.delete(0, 'end')
+
 
 def deletar(conexao):
     janela = ctk.CTkToplevel()
@@ -197,7 +201,7 @@ def deletar(conexao):
                 btn = ctk.CTkButton(frame_resultados, text=texto, command=lambda id=vinho[0], desc=texto: confirmar_exclusao(id, desc))
                 btn.pack(pady=2)
 
-    def confirmar_exclusao(vinho_id, descricao):
+    def confirmar_exclusao(id_vinho, descricao):
         for widget in frame_resultados.winfo_children():
             widget.destroy()
 
@@ -206,7 +210,7 @@ def deletar(conexao):
         def excluir():
             try:
                 cursor = conexao.cursor()
-                cursor.execute("DELETE FROM tbl_vinhos WHERE id = %s", (vinho_id,))
+                cursor.execute("DELETE FROM tbl_vinhos WHERE id = %s", (id_vinho,))
                 conexao.commit()
                 ctk.CTkLabel(frame_resultados, text="Vinho deletado com sucesso!", text_color="green").pack()
             except Exception as e:
@@ -242,13 +246,28 @@ def atualizar(conexao):
     ctk.CTkButton(tela_atualizar, text="Atualizar", command=executar_atualizacao_local).pack(pady=20)
 
 def listar(conexao):
-  cursor = conexao.cursor()
-  cursor.execute("SELECT * FROM tbl_vinhos")
-  tbl_vinhos = cursor.fetchall()
-  for vinho in tbl_vinhos:
-        print(vinho)
-
+    tela_listar = ctk.CTkToplevel()
+    tela_listar.title("Lista de Vinhos")
+    tela_listar.geometry("700x500")
+    frame = ctk.CTkFrame(tela_listar)
+    frame.pack(pady=20, padx=20, fill="both", expand=True)
+    scrollable = ctk.CTkScrollableFrame(frame, label_text="Vinhos cadastrados")
+    scrollable.pack(padx=10, pady=10, fill="both", expand=True)
+    cursor = conexao.cursor()
+    cursor.execute("SELECT id, nome_vinho, tipo_vinho, safra, quantidade, valor_vinho FROM tbl_vinhos")
+    vinhos = cursor.fetchall()
+    if not vinhos:
+        ctk.CTkLabel(scrollable, text="Nenhum vinho cadastrado.", text_color="red").pack(pady=10)
+    else:
+        for vinho in vinhos:
+            texto = (
+                f"ID: {vinho[0]} | Nome: {vinho[1]} | Tipo: {vinho[2]} | "
+                f"Safra: {vinho[3]} | Quantidade: {vinho[4]}ml | Valor: R${vinho[5]:.2f}"
+            )
+            ctk.CTkLabel(scrollable, text=texto, anchor="w", justify="left").pack(pady=5, padx=10, anchor='w')
+    
 janela_login()     
+        
 -------------------------------------------------------------------------------------------------------------------------
 
 ---MYSQL---
@@ -256,33 +275,42 @@ janela_login()
 CREATE DATABASE adega;
 USE adega;
 
-CREATE TABLE fabricante (
+CREATE TABLE tbl_fabricantes (
     id_fabricante INT AUTO_INCREMENT PRIMARY KEY,
     data_entregue DATE,
     nome_fabricante VARCHAR(100)
 );
 
-CREATE TABLE vinhos (
-    id_vinhos INT AUTO_INCREMENT PRIMARY KEY,
-    nome_vinhos VARCHAR(100) NOT NULL,
-    tipo_vinhos VARCHAR(100) NOT NULL,
+CREATE TABLE tbl_vinhos (
+    id_vinho INT AUTO_INCREMENT PRIMARY KEY,
+    nome_vinho VARCHAR(100) NOT NULL,
+    tipo_vinho VARCHAR(100) NOT NULL,
     safra DATE NOT NULL,
     quantidade FLOAT,
-    valor_vinhos DECIMAL(10, 2),
+    valor_vinho DECIMAL(10, 2),
     id_fabricante INT,
     FOREIGN KEY (id_fabricante) REFERENCES fabricante(id_fabricante)
 );
 
-INSERT INTO fabricante (data_entregue, nome_fabricante) VALUES 
+INSERT INTO tbl_fabricantes (data_entregue, nome_fabricante) VALUES 
 ('2024-05-01', 'Vinícola Aurora'),
 ('2024-05-02', 'Casa Valduga'),
-('2024-05-03', 'Miolo Wine Group');
+('2024-05-03', 'Miolo Wine Group'),
+('2024-05-04', 'Salton'),
+('2024-05-05', 'Dom Bosco');
 
-INSERT INTO vinhos (nome_vinhos, tipo_vinhos, safra, quantidade, valor_vinhos, id_fabricante) VALUES
+INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, id_fabricante) VALUES
 ('Aurora Reserva', 'Tinto Seco', '2020-01-01', 120.5, 45.90, 1),
 ('Valduga Chardonnay', 'Branco Seco', '2021-01-01', 85.0, 59.90, 2),
 ('Miolo Merlot', 'Tinto Seco', '2019-01-01', 200.0, 62.50, 3),
-('Valduga Espumante', 'Espumante Brut', '2022-01-01', 150.0, 75.00, 2);
+('Valduga Espumante', 'Espumante Brut', '2022-01-01', 150.0, 75.00, 2),
+('Salton', 'Tinto Seco', '2018-01-01', 110.0, 38.90, 4),
+('Dom Bosco', 'Tinto Suave', '2021-01-01', 300.0, 25.50, 5),
+('Aurora Moscato', 'Branco Suave', '2022-01-01', 90.0, 34.90, 1),
+('Miolo Seleção', 'Rosé Seco', '2023-01-01', 75.0, 48.00, 3),
+('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 130.0, 82.00, 2);
+
+        
         
         </h1>
 </body>
