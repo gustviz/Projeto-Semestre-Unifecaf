@@ -39,7 +39,7 @@
 <img src="uvas.ico" alt="Ícone de uvas" width="64" height="64">
         
 ---PYTHON---
-
+        
 import customtkinter as ctk
 import mysql.connector
 from datetime import datetime
@@ -55,12 +55,14 @@ conexao = mysql.connector.connect(
 cursor = conexao.cursor()
 print("Conectado ao MySQL com sucesso!")
 
+
+
 def janela_login():
     ctk.set_appearance_mode('dark')
     tela_login = ctk.CTk()
     tela_login.geometry('460x450')
     tela_login.title('Login Adega 4 amigos')
-    tela_login.iconbitmap("uvas.ico") 
+    # tela_login.iconbitmap("uvas.ico") 
     frame1 = ctk.CTkFrame(tela_login, width=400, height=420)
     frame1.pack(pady=10, padx=10, anchor='center')
     frame1.pack_propagate(False)
@@ -103,7 +105,7 @@ def janela_adega():
     ctk.set_appearance_mode('dark')
     tela_adega.geometry('800x600')
     tela_adega.title('Adega 4 amigos')
-    tela_adega.iconbitmap("uvas.ico") 
+    # tela_adega.iconbitmap("uvas.ico") 
     frame_adega = ctk.CTkFrame(tela_adega, width=700, height=500, corner_radius=15)
     frame_adega.place(relx=0.5, rely=0.5, anchor='center')
     frame_adega.pack_propagate(False)
@@ -141,7 +143,7 @@ def inserir(conexao):
     entry_nome.pack(pady=10)
     entry_tipo = ctk.CTkEntry(janela, placeholder_text="Tipo")
     entry_tipo.pack(pady=10)
-    entry_safra = ctk.CTkEntry(janela, placeholder_text="Safra (AAAA-MM-DD)")
+    entry_safra = ctk.CTkEntry(janela, placeholder_text="Safra (DD-MM-AAA)")
     entry_safra.pack(pady=10)
     entry_quantidade = ctk.CTkEntry(janela, placeholder_text="Quantidade (ml)")
     entry_quantidade.pack(pady=10)
@@ -180,23 +182,23 @@ def inserir(conexao):
     entry_valor.delete(0, 'end')
 
 
+import customtkinter as ctk
+
 def deletar(conexao):
     janela = ctk.CTkToplevel()
     janela.title("Deletar Vinho")
     janela.geometry("400x500")
-
     ctk.CTkLabel(janela, text="Digite o nome do vinho para buscar:").pack(pady=10)
     entry_nome = ctk.CTkEntry(janela, placeholder_text="Nome do vinho")
     entry_nome.pack(pady=10)
-    ctk.CTkButton(janela, text="Buscar", command=buscar_vinhos).pack(pady=5)
-
+    btn_buscar = ctk.CTkButton(janela, text="Buscar", command=lambda: buscar_vinhos(entry_nome, conexao))
+    btn_buscar.pack(pady=10)
     frame_resultados = ctk.CTkFrame(janela)
     frame_resultados.pack(pady=10, fill="both", expand=True)
 
-    def buscar_vinhos():
+    def buscar_vinhos(entry_nome, conexao):
         for widget in frame_resultados.winfo_children():
             widget.destroy()
-
         nome = entry_nome.get()
         cursor = conexao.cursor()
         cursor.execute("SELECT id, nome_vinho, tipo, safra FROM tbl_vinhos WHERE nome_vinho = %s", (nome,))
@@ -227,9 +229,7 @@ def deletar(conexao):
                 ctk.CTkLabel(frame_resultados, text=f"Erro ao deletar: {e}", text_color="red").pack()
 
         ctk.CTkButton(frame_resultados, text="Confirmar exclusão", fg_color="red", command=excluir).pack(pady=5)
-        ctk.CTkButton(frame_resultados, text="Cancelar", command=buscar_vinhos).pack(pady=2)
-
-
+        ctk.CTkButton(frame_resultados, text="Cancelar", command=lambda: buscar_vinhos(entry_nome, conexao)).pack(pady=2)
 
 def atualizar(conexao):
     tela_atualizar = ctk.CTkToplevel()
@@ -264,7 +264,7 @@ def listar(conexao):
     scrollable = ctk.CTkScrollableFrame(frame, label_text="Vinhos cadastrados")
     scrollable.pack(padx=10, pady=10, fill="both", expand=True)
     cursor = conexao.cursor()
-    cursor.execute("SELECT id, nome_vinho, tipo_vinho, safra, quantidade, valor_vinho FROM tbl_vinhos")
+    cursor.execute("SELECT id_vinho, nome_vinho, tipo_vinho, safra, quantidade, valor_vinho FROM tbl_vinhos")
     vinhos = cursor.fetchall()
     if not vinhos:
         ctk.CTkLabel(scrollable, text="Nenhum vinho cadastrado.", text_color="red").pack(pady=10)
@@ -276,7 +276,7 @@ def listar(conexao):
             )
             ctk.CTkLabel(scrollable, text=texto, anchor="w", justify="left").pack(pady=5, padx=10, anchor='w')
     
-janela_login()     
+janela_login()
         
 -------------------------------------------------------------------------------------------------------------------------
 
