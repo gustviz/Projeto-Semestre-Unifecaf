@@ -58,10 +58,10 @@ print("Conectado ao MySQL com sucesso!")
 def janela_login():
     ctk.set_appearance_mode('dark')
     tela_login = ctk.CTk()
-    tela_login.geometry('400x400')
+    tela_login.geometry('460x450')
     tela_login.title('Login Adega 4 amigos')
     tela_login.iconbitmap("uvas.ico") 
-    frame1 = ctk.CTkFrame(tela_login, width=300, height=350)
+    frame1 = ctk.CTkFrame(tela_login, width=400, height=420)
     frame1.pack(pady=10, padx=10, anchor='center')
     frame1.pack_propagate(False)
     frame2 = ctk.CTkFrame(frame1, width=200, height=50)
@@ -77,12 +77,16 @@ def janela_login():
     label_senha.pack(pady=8)
     campo_senha = ctk.CTkEntry(frame1, placeholder_text='Digite a senha', show='*')
     campo_senha.pack(pady=2)
+    resultado_login = ctk.CTkLabel(frame1, text='', font=('arial', 15, 'bold'))
+    resultado_login.pack(pady=10)
     btn_login = ctk.CTkButton(frame1, text='Login', width=200, height=30, corner_radius=10,
                           fg_color='purple', hover_color='violet', font=('roboto', 12, 'bold'),
                           command=lambda: validar_login(campo_usuario, campo_senha, resultado_login, tela_login))
-    btn_login.pack(pady=35)
-    resultado_login = ctk.CTkLabel(frame1, text='', font=('arial', 15, 'bold'))
-    resultado_login.pack(pady=5)
+    btn_login.pack(pady=25)
+    btn_lista = ctk.CTkButton(frame1, text='Listar vinhos', width=200, height=30, corner_radius=10,
+                          fg_color='purple', hover_color='violet', font=('roboto', 12, 'bold'),
+                          command=lambda:listar(conexao))
+    btn_lista.pack (pady=5)
     tela_login.mainloop()
 
 def validar_login(campo_usuario, campo_senha, resultado_login, tela_login):
