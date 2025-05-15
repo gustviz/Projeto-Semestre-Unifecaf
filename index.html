@@ -338,14 +338,14 @@ janela_login()
 CREATE DATABASE adega;
 USE adega;
 
-CREATE TABLE  tbl_fabricantes (
+CREATE TABLE tbl_fabricantes (
     id_fabricante INT AUTO_INCREMENT PRIMARY KEY,
     data_entregue DATE,
     nome_fabricante VARCHAR(100),
     pais_origem VARCHAR(100)
 );
 
-CREATE TABLE  tbl_clientes (
+CREATE TABLE tbl_clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nome_cliente VARCHAR(100) NOT NULL,
     telefone_cliente VARCHAR(20)
@@ -358,21 +358,22 @@ CREATE TABLE tbl_vinhos (
     safra DATE NOT NULL,
     quantidade FLOAT,
     valor_vinho DECIMAL(10, 2),
-    id_fabricante INT,
-    FOREIGN KEY (id_fabricante) REFERENCES tbl_fabricantes(id_fabricante)
+    fgk_fabricante INT,
+    FOREIGN KEY (fgk_fabricante) REFERENCES tbl_fabricantes(id_fabricante)
 );
 
 CREATE TABLE tbl_pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     data_pedido DATE NOT NULL,
-    id_cliente INT,
-    id_vinho INT,
+    fgk_cliente INT,
+    fgk_vinho INT,
     quantidade INT,
     valor_total DECIMAL(10,2),
-    FOREIGN KEY (id_cliente) REFERENCES tbl_clientes(id_cliente),
-    FOREIGN KEY (id_vinho) REFERENCES tbl_vinhos(id_vinho)
+    FOREIGN KEY (fgk_cliente) REFERENCES tbl_clientes(id_cliente),
+    FOREIGN KEY (fgk_vinho) REFERENCES tbl_vinhos(id_vinho)
 );
 
+-- Tabela de fabricantes
 INSERT INTO tbl_fabricantes (data_entregue, nome_fabricante, pais_origem) VALUES
 ('2024-05-01', 'Vinícola Aurora', 'Brasil'),
 ('2024-05-02', 'Casa Valduga', 'Brasil'),
@@ -385,6 +386,7 @@ INSERT INTO tbl_fabricantes (data_entregue, nome_fabricante, pais_origem) VALUES
 ('2024-05-09', 'Baron Philippe de Rothschild', 'França'),
 ('2024-05-10', 'Penfolds', 'Austrália');
 
+-- Tabela de clientes
 INSERT INTO tbl_clientes (nome_cliente, telefone_cliente) VALUES
 ('João Silva', '11999990001'),
 ('Maria Oliveira', '11999990002'),
@@ -397,7 +399,8 @@ INSERT INTO tbl_clientes (nome_cliente, telefone_cliente) VALUES
 ('Rafael Almeida', '11999990009'),
 ('Camila Rocha', '11999990010');
 
-INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, id_fabricante) VALUES
+-- Tabela de vinhos (ajustada com fgk_fabricante)
+INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES
 ('Aurora Reserva', 'Tinto Seco', '2020-01-01', 120.5, 45.90, 1),
 ('Valduga Chardonnay', 'Branco Seco', '2021-01-01', 85.0, 59.90, 2),
 ('Miolo Merlot', 'Tinto Seco', '2019-01-01', 200.0, 62.50, 3),
@@ -409,7 +412,8 @@ INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, 
 ('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 130.0, 82.00, 2),
 ('Concha y Toro Reservado', 'Tinto Seco', '2021-01-01', 180.0, 55.00, 6);
 
-INSERT INTO tbl_pedidos (data_pedido, id_cliente, id_vinho, quantidade, valor_total) VALUES
+-- Tabela de pedidos (ajustada com fgk_cliente e fgk_vinho)
+INSERT INTO tbl_pedidos (data_pedido, fgk_cliente, fgk_vinho, quantidade, valor_total) VALUES
 ('2024-05-10', 1, 1, 2, 91.80),
 ('2024-05-11', 2, 2, 1, 59.90),
 ('2024-05-12', 3, 3, 3, 187.50),
