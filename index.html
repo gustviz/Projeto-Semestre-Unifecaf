@@ -434,18 +434,18 @@ janela_login()
 CREATE DATABASE adega;
 USE adega;
 
--- Tabela de Fabricantes (sem data_entregue)
+-- Tabela de Fabricantes
 CREATE TABLE tbl_fabricantes (
     id_fabricante INT AUTO_INCREMENT PRIMARY KEY,
     nome_fabricante VARCHAR(100),
     pais_origem VARCHAR(100)
 );
 
-
+-- Tabela de Vinhos
 CREATE TABLE tbl_vinhos (
     id_vinho INT AUTO_INCREMENT PRIMARY KEY,
-    nome_vinho VARCHAR(100) ,
-    tipo_vinho VARCHAR(100) ,
+    nome_vinho VARCHAR(100),
+    tipo_vinho VARCHAR(100),
     safra DATE,
     quantidade FLOAT,
     valor_vinho DECIMAL(10, 2),
@@ -453,14 +453,12 @@ CREATE TABLE tbl_vinhos (
     FOREIGN KEY (fgk_fabricante) REFERENCES tbl_fabricantes(id_fabricante)
 );
 
-
+-- Tabela de Pedidos (sem quantidade, e valor total vira FK para o vinho)
 CREATE TABLE tbl_pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     data_pedido DATE NOT NULL,
     nome_cliente VARCHAR(100) NOT NULL,
     fgk_vinho INT,
-    quantidade INT,
-    valor_total DECIMAL(10,2),
     FOREIGN KEY (fgk_vinho) REFERENCES tbl_vinhos(id_vinho)
 );
 
@@ -477,6 +475,7 @@ INSERT INTO tbl_fabricantes (nome_fabricante, pais_origem) VALUES
 ('Baron Philippe de Rothschild', 'França'),
 ('Penfolds', 'Austrália');
 
+-- Inserção dos Vinhos
 INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES
 ('Aurora Reserva', 'Tinto Seco', '2020-01-01', 120.5, 45.90, 1),
 ('Valduga Chardonnay', 'Branco Seco', '2021-01-01', 85.0, 59.90, 2),
@@ -489,18 +488,18 @@ INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, 
 ('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 130.0, 82.00, 2),
 ('Concha y Toro Reservado', 'Tinto Seco', '2021-01-01', 180.0, 55.00, 6);
 
-
-INSERT INTO tbl_pedidos (data_pedido, nome_cliente, fgk_vinho, quantidade, valor_total) VALUES
-('2024-05-10', 'João Silva', 1, 2, 91.80),
-('2024-05-11', 'Maria Oliveira', 2, 1, 59.90),
-('2024-05-12', 'Carlos Souza', 3, 3, 187.50),
-('2024-05-13', 'Ana Paula', 4, 2, 150.00),
-('2024-05-14', 'Pedro Santos', 5, 1, 38.90),
-('2024-05-15', 'Fernanda Lima', 6, 4, 102.00),
-('2024-05-16', 'Lucas Pereira', 7, 2, 69.80),
-('2024-05-17', 'Juliana Costa', 8, 1, 48.00),
-('2024-05-18', 'Rafael Almeida', 9, 2, 164.00),
-('2024-05-19', 'Camila Rocha', 10, 1, 55.00);
+-- Inserção dos Pedidos (1 vinho por pedido, valor vem da FK)
+INSERT INTO tbl_pedidos (data_pedido, nome_cliente, fgk_vinho) VALUES
+('2024-05-10', 'João Silva', 1),
+('2024-05-11', 'Maria Oliveira', 2),
+('2024-05-12', 'Carlos Souza', 3),
+('2024-05-13', 'Ana Paula', 4),
+('2024-05-14', 'Pedro Santos', 5),
+('2024-05-15', 'Fernanda Lima', 6),
+('2024-05-16', 'Lucas Pereira', 7),
+('2024-05-17', 'Juliana Costa', 8),
+('2024-05-18', 'Rafael Almeida', 9),
+('2024-05-19', 'Camila Rocha', 10);
         </h1>
 </body>
 </html>
