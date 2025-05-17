@@ -441,19 +441,19 @@ CREATE TABLE tbl_fabricantes (
     pais_origem VARCHAR(100)
 );
 
--- Tabela de Vinhos
+-- Tabela de Vinhos (quantidade = volume em ml)
 CREATE TABLE tbl_vinhos (
     id_vinho INT AUTO_INCREMENT PRIMARY KEY,
     nome_vinho VARCHAR(100),
     tipo_vinho VARCHAR(100),
     safra DATE,
-    quantidade FLOAT,
+    quantidade FLOAT, -- volume da garrafa em ml
     valor_vinho DECIMAL(10, 2),
     fgk_fabricante INT,
     FOREIGN KEY (fgk_fabricante) REFERENCES tbl_fabricantes(id_fabricante)
 );
 
--- Tabela de Pedidos (sem quantidade, e valor total vira FK para o vinho)
+-- Tabela de Pedidos
 CREATE TABLE tbl_pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     data_pedido DATE NOT NULL,
@@ -475,20 +475,20 @@ INSERT INTO tbl_fabricantes (nome_fabricante, pais_origem) VALUES
 ('Baron Philippe de Rothschild', 'França'),
 ('Penfolds', 'Austrália');
 
--- Inserção dos Vinhos
-INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES
-('Aurora Reserva', 'Tinto Seco', '2020-01-01', 120.5, 45.90, 1),
-('Valduga Chardonnay', 'Branco Seco', '2021-01-01', 85.0, 59.90, 2),
-('Miolo Merlot', 'Tinto Seco', '2019-01-01', 200.0, 62.50, 3),
-('Valduga Espumante', 'Espumante Brut', '2022-01-01', 150.0, 75.00, 2),
-('Salton', 'Tinto Seco', '2018-01-01', 110.0, 38.90, 4),
-('Dom Bosco', 'Tinto Suave', '2021-01-01', 300.0, 25.50, 5),
-('Aurora Moscato', 'Branco Suave', '2022-01-01', 90.0, 34.90, 1),
-('Miolo Seleção', 'Rosé Seco', '2023-01-01', 75.0, 48.00, 3),
-('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 130.0, 82.00, 2),
-('Concha y Toro Reservado', 'Tinto Seco', '2021-01-01', 180.0, 55.00, 6);
 
--- Inserção dos Pedidos (1 vinho por pedido, valor vem da FK)
+INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES
+('Aurora Reserva', 'Tinto Seco', '2020-01-01', 750, 2500.00, 1),
+('Valduga Chardonnay', 'Branco Seco', '2021-01-01', 750, 3200.00, 2),
+('Miolo Merlot', 'Tinto Seco', '2019-01-01', 750, 2800.00, 3),
+('Valduga Espumante', 'Espumante Brut', '2022-01-01', 1500, 3500.00, 2),
+('Salton', 'Tinto Seco', '2018-01-01', 750, 2300.00, 4),
+('Dom Bosco', 'Tinto Suave', '2021-01-01', 750, 2100.00, 5),
+('Aurora Moscato', 'Branco Suave', '2022-01-01', 375, 2600.00, 1),
+('Miolo Seleção', 'Rosé Seco', '2023-01-01', 750, 2900.00, 3),
+('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 1500, 4200.00, 2),
+('Concha y Toro Reservado', 'Tinto Seco', '2021-01-01', 3000, 3100.00, 6);
+
+-- Inserção dos Pedidos
 INSERT INTO tbl_pedidos (data_pedido, nome_cliente, fgk_vinho) VALUES
 ('2024-05-10', 'João Silva', 1),
 ('2024-05-11', 'Maria Oliveira', 2),
