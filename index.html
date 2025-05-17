@@ -39,8 +39,7 @@
 <img src="uvas.ico" alt="Ícone de uvas" width="64" height="64">
         
 ---PYTHON---
-        
-import customtkinter as ctk
+   import customtkinter as ctk
 import mysql.connector
 from datetime import datetime
 
@@ -77,6 +76,27 @@ def janela_login():
     campo_senha.pack(pady=2)
     resultado_login = ctk.CTkLabel(frame1, text='', font=('arial', 15, 'bold'))
     resultado_login.pack(pady=10)
+
+    # AVISO E QUANTIDADE DE VINHOS CADASTRADOS
+    cursor = conexao.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM tbl_vinhos
+        WHERE nome_vinho IS NOT NULL
+          AND tipo_vinho IS NOT NULL
+          AND safra IS NOT NULL
+          AND quantidade IS NOT NULL
+          AND valor_vinho IS NOT NULL
+    """)
+    total_vinhos = cursor.fetchone()[0]
+    ctk.CTkLabel(frame1, text=f"Total de vinhos cadastrados: {total_vinhos}", font=("Arial", 13, "bold")).pack(pady=2)
+    if total_vinhos < 5:
+        ctk.CTkLabel(
+            frame1,
+            text=f"⚠️ Apenas {total_vinhos} vinho(s) cadastrado(s) no estoque!",
+            text_color="orange",
+            font=("Arial", 14, "bold")
+        ).pack(pady=2)
+
     btn_login = ctk.CTkButton(frame1, text='Login', width=200, height=30, corner_radius=10,
                           fg_color='purple', hover_color='violet', font=('roboto', 12, 'bold'),
                           command=lambda: validar_login(campo_usuario, campo_senha, resultado_login, janela_login))
@@ -128,6 +148,8 @@ def janela_adega():
                           width=250, height=40, command=lambda: listar(conexao))
     btn_listar.pack(pady=10, padx=10)
     btn_listar.pack_propagate(False)
+    
+
     btn_cadastrar_fab = ctk.CTkButton(frame_adega, text='Cadastrar fabricante', corner_radius=10,
                           fg_color='purple', hover_color='violet', font=('roboto', 12, 'bold'),
                           width=250, height=40, command=lambda: cadastrar_fabricante(conexao))
@@ -169,6 +191,7 @@ def cadastrar_fabricante(conexao):
             entry_pais.delete(0, 'end')
         except Exception as e:
             resultado.configure(text=f"Erro: {e}", text_color="red")
+
     ctk.CTkButton(janela, text="Salvar", command=salvar_fabricante).pack(pady=20)
 
 def inserir(conexao):
@@ -202,7 +225,7 @@ def inserir(conexao):
     def criar_vinho(conexao, nome, tipo, safra, quantidade, valor, id_fabricante):
         cursor = conexao.cursor()
         cursor.execute(
-            "INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, id_fabricante) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES (%s, %s, %s, %s, %s, %s)",
             (nome, tipo, safra, quantidade, valor, id_fabricante)
         )
         conexao.commit()
@@ -213,7 +236,7 @@ def inserir(conexao):
             tipo = entry_tipo.get()
             safra = entry_safra.get()
             safra = datetime.strptime(str(safra), "%Y-%m-%d").date()
-            quantidade = int(entry_quantidade.get())
+            quantidade = float(entry_quantidade.get()) 
             preco = float(entry_valor.get())
             fabricante_nome = combo_fabricante.get()
             id_fabricante = next((f[0] for f in fabricantes if f[1] == fabricante_nome), None)
@@ -297,7 +320,14 @@ def atualizar(conexao):
     frame_resultados = ctk.CTkFrame(janela)
     frame_resultados.pack(pady=10, fill="both", expand=True)
     cursor = conexao.cursor()
-    cursor.execute("SELECT id_vinho, nome_vinho, tipo_vinho, safra FROM tbl_vinhos")
+    cursor.execute(    """SELECT id_vinho, nome_vinho, tipo_vinho, safra, quantidade, valor_vinho 
+        FROM tbl_vinhos
+        WHERE nome_vinho IS NOT NULL
+          AND tipo_vinho IS NOT NULL
+          AND safra IS NOT NULL
+          AND quantidade IS NOT NULL
+          AND valor_vinho IS NOT NULL
+    """)
     resultados = cursor.fetchall()
     if not resultados:
         ctk.CTkLabel(frame_resultados, text="Nenhum vinho cadastrado.").pack()
@@ -312,7 +342,7 @@ def atualizar(conexao):
         entry_id.pack(pady=10)
 
         ctk.CTkLabel(janela, text="Escolha o campo que deseja atualizar:").pack(pady=10)
-        opcoes = ['nome_vinho', 'tipo_vinho', 'safra', 'quantidade', 'valor_vinho', 'id_fabricante']
+        opcoes = ['nome_vinho', 'tipo_vinho', 'safra', 'quantidade', 'valor_vinho', 'fgk_fabricante']
         combo_campo = ctk.CTkComboBox(janela, values=opcoes)
         combo_campo.pack(pady=10)
 
@@ -320,7 +350,7 @@ def atualizar(conexao):
         label_fabricantes = ctk.CTkLabel(frame_fabricantes, text="")
 
         def mostrar_fabricantes():
-            if combo_campo.get() == 'id_fabricante':
+            if combo_campo.get() == 'fgk_fabricante':
                 frame_fabricantes.pack(pady=10)
                 cursor = conexao.cursor()
                 cursor.execute("SELECT id_fabricante, nome_fabricante, pais_origem FROM tbl_fabricantes")
@@ -352,7 +382,7 @@ def atualizar(conexao):
                     novo_valor = float(novo_valor)
                 elif campo == 'valor_vinho':
                     novo_valor = float(novo_valor)
-                elif campo == 'id_fabricante':
+                elif campo == 'fgk_fabricante':
                     novo_valor = int(novo_valor)
                 
                 cursor.execute(query, (novo_valor, id_vinho))
@@ -363,6 +393,7 @@ def atualizar(conexao):
                 ctk.CTkLabel(janela, text="Erro: valor inválido para o campo selecionado", text_color="red").pack(pady=10)
             except Exception as e:
                 ctk.CTkLabel(janela, text=f"Erro: {e}", text_color="red").pack(pady=10)
+
         ctk.CTkButton(janela, text="Atualizar", command=executar_atualizacao).pack(pady=20)
 
 def listar(conexao):
@@ -395,7 +426,7 @@ def listar(conexao):
             ctk.CTkLabel(scrollable, text=texto, anchor="w", justify="left").pack(pady=5, padx=10, anchor='w')
     
 janela_login()
-                
+
 -------------------------------------------------------------------------------------------------------------------------
 
 ---MYSQL---
@@ -403,64 +434,48 @@ janela_login()
 CREATE DATABASE adega;
 USE adega;
 
+-- Tabela de Fabricantes (sem data_entregue)
 CREATE TABLE tbl_fabricantes (
     id_fabricante INT AUTO_INCREMENT PRIMARY KEY,
-    data_entregue DATE,
     nome_fabricante VARCHAR(100),
     pais_origem VARCHAR(100)
 );
 
-CREATE TABLE tbl_clientes (
-    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
-    nome_cliente VARCHAR(100) NOT NULL,
-    telefone_cliente VARCHAR(20)
-);
 
 CREATE TABLE tbl_vinhos (
     id_vinho INT AUTO_INCREMENT PRIMARY KEY,
-    nome_vinho VARCHAR(100) NOT NULL,
-    tipo_vinho VARCHAR(100) NOT NULL,
-    safra DATE NOT NULL,
+    nome_vinho VARCHAR(100) ,
+    tipo_vinho VARCHAR(100) ,
+    safra DATE,
     quantidade FLOAT,
     valor_vinho DECIMAL(10, 2),
     fgk_fabricante INT,
     FOREIGN KEY (fgk_fabricante) REFERENCES tbl_fabricantes(id_fabricante)
 );
 
+
 CREATE TABLE tbl_pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     data_pedido DATE NOT NULL,
-    fgk_cliente INT,
+    nome_cliente VARCHAR(100) NOT NULL,
     fgk_vinho INT,
     quantidade INT,
     valor_total DECIMAL(10,2),
-    FOREIGN KEY (fgk_cliente) REFERENCES tbl_clientes(id_cliente),
     FOREIGN KEY (fgk_vinho) REFERENCES tbl_vinhos(id_vinho)
 );
 
-INSERT INTO tbl_fabricantes (data_entregue, nome_fabricante, pais_origem) VALUES
-('2024-05-01', 'Vinícola Aurora', 'Brasil'),
-('2024-05-02', 'Casa Valduga', 'Brasil'),
-('2024-05-03', 'Miolo Wine Group', 'Brasil'),
-('2024-05-04', 'Salton', 'Brasil'),
-('2024-05-05', 'Dom Bosco', 'Brasil'),
-('2024-05-06', 'Concha y Toro', 'Chile'),
-('2024-05-07', 'Trapiche', 'Argentina'),
-('2024-05-08', 'Gallo Family', 'EUA'),
-('2024-05-09', 'Baron Philippe de Rothschild', 'França'),
-('2024-05-10', 'Penfolds', 'Austrália');
-
-INSERT INTO tbl_clientes (nome_cliente, telefone_cliente) VALUES
-('João Silva', '11999990001'),
-('Maria Oliveira', '11999990002'),
-('Carlos Souza', '11999990003'),
-('Ana Paula', '11999990004'),
-('Pedro Santos', '11999990005'),
-('Fernanda Lima', '11999990006'),
-('Lucas Pereira', '11999990007'),
-('Juliana Costa', '11999990008'),
-('Rafael Almeida', '11999990009'),
-('Camila Rocha', '11999990010');
+-- Inserção dos Fabricantes
+INSERT INTO tbl_fabricantes (nome_fabricante, pais_origem) VALUES
+('Vinícola Aurora', 'Brasil'),
+('Casa Valduga', 'Brasil'),
+('Miolo Wine Group', 'Brasil'),
+('Salton', 'Brasil'),
+('Dom Bosco', 'Brasil'),
+('Concha y Toro', 'Chile'),
+('Trapiche', 'Argentina'),
+('Gallo Family', 'EUA'),
+('Baron Philippe de Rothschild', 'França'),
+('Penfolds', 'Austrália');
 
 INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, fgk_fabricante) VALUES
 ('Aurora Reserva', 'Tinto Seco', '2020-01-01', 120.5, 45.90, 1),
@@ -474,17 +489,18 @@ INSERT INTO tbl_vinhos (nome_vinho, tipo_vinho, safra, quantidade, valor_vinho, 
 ('Casa Valduga Terroir', 'Tinto Seco', '2020-01-01', 130.0, 82.00, 2),
 ('Concha y Toro Reservado', 'Tinto Seco', '2021-01-01', 180.0, 55.00, 6);
 
-INSERT INTO tbl_pedidos (data_pedido, fgk_cliente, fgk_vinho, quantidade, valor_total) VALUES
-('2024-05-10', 1, 1, 2, 91.80),
-('2024-05-11', 2, 2, 1, 59.90),
-('2024-05-12', 3, 3, 3, 187.50),
-('2024-05-13', 4, 4, 2, 150.00),
-('2024-05-14', 5, 5, 1, 38.90),
-('2024-05-15', 6, 6, 4, 102.00),
-('2024-05-16', 7, 7, 2, 69.80),
-('2024-05-17', 8, 8, 1, 48.00),
-('2024-05-18', 9, 9, 2, 164.00),
-('2024-05-19', 10, 10, 1, 55.00);
+
+INSERT INTO tbl_pedidos (data_pedido, nome_cliente, fgk_vinho, quantidade, valor_total) VALUES
+('2024-05-10', 'João Silva', 1, 2, 91.80),
+('2024-05-11', 'Maria Oliveira', 2, 1, 59.90),
+('2024-05-12', 'Carlos Souza', 3, 3, 187.50),
+('2024-05-13', 'Ana Paula', 4, 2, 150.00),
+('2024-05-14', 'Pedro Santos', 5, 1, 38.90),
+('2024-05-15', 'Fernanda Lima', 6, 4, 102.00),
+('2024-05-16', 'Lucas Pereira', 7, 2, 69.80),
+('2024-05-17', 'Juliana Costa', 8, 1, 48.00),
+('2024-05-18', 'Rafael Almeida', 9, 2, 164.00),
+('2024-05-19', 'Camila Rocha', 10, 1, 55.00);
         </h1>
 </body>
 </html>
